@@ -29,3 +29,37 @@ CREATE TABLE IF NOT EXISTS marks (
   CHECK (max_score >= 1 AND max_score <= 200),
   CHECK (score >= 0 AND score <= max_score)
 );
+
+-- Logins. connectDb creates a smaller users table first; these statements add the rest.
+-- The role check is dropped and re-added so teacher and student can be introduced safely.
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash TEXT,
+  role VARCHAR(20) NOT NULL DEFAULT 'user',
+  student_id INTEGER NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'user';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS student_id INTEGER NULL;
+
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
+ALTER TABLE users ADD CONSTRAINT users_role_check
+  CHECK (role IN ('user', 'moderator', 'admin', 'teacher', 'student'));
+
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_student_id_fkey;
+ALTER TABLE users ADD CONSTRAINT users_student_id_fkey
+  FOREIGN KEY (student_id) REFERENCES students (id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS users_student_id_unique
+  ON users (student_id) WHERE student_id IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS teacher_classes (
+  teacher_user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+  class_name VARCHAR(2) NOT NULL CHECK (class_name IN ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12')),
+  section VARCHAR(1) NOT NULL CHECK (section IN ('A', 'B', 'C', 'D', 'E', 'F')),
+  PRIMARY KEY (teacher_user_id, class_name, section)
+);

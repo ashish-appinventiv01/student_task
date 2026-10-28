@@ -10,7 +10,7 @@ import {
   rollNoSchema,
   searchQuery,
   sectionSchema,
-} from '../../src/utils/validators';
+} from '../../utils/validators';
 import type { GuardianRelation } from './student.interface';
 
 export const guardianDto = z.strictObject({

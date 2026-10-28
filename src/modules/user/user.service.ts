@@ -1,6 +1,6 @@
 import type { CreateUserDto, UpdateUserDto, UserResponseDto } from './user.dto';
-import { conflict, notFound } from '../../errors/AppError';
-import { pool } from '../../config/db';
+import { conflict, notFound } from '../../../errors/AppError';
+import { pool } from '../../../config/db';
 
 /**
  * Business logic. Knows nothing about Express (no req/res).

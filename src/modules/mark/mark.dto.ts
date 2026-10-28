@@ -6,7 +6,7 @@ import {
   scoreSchema,
   sectionSchema,
   tag,
-} from '../../src/utils/validators';
+} from '../../utils/validators';
 import type { Exam } from './mark.interface';
 
 const markItemDto = z.strictObject({

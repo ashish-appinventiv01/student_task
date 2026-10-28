@@ -1,7 +1,7 @@
-import { pool } from '../../config/db';
-import { badRequest, conflict, notFound } from '../../errors/AppError';
-import { postgresErrorCode } from '../../errors/pg';
-import { toNumeric } from '../../src/utils/validators';
+import { pool } from '../../../config/db';
+import { badRequest, conflict, notFound } from '../../../errors/AppError';
+import { postgresErrorCode } from '../../../errors/pg';
+import { toNumeric } from '../../utils/validators';
 import type {
   Exam,
   Mark,
@@ -130,6 +130,7 @@ interface SubjectAverageRow {
 }
 
 export const subjectAverages = async (filter: SubjectAverageFilter): Promise<SubjectAverage[]> => {
+  const sections = filter.sections ?? (filter.section !== undefined ? [filter.section] : null);
   const result = await pool.query<SubjectAverageRow>(
     `SELECT m.subject,
             AVG(m.score / m.max_score * 100) AS average_percentage,
@@ -138,10 +139,10 @@ export const subjectAverages = async (filter: SubjectAverageFilter): Promise<Sub
      INNER JOIN students s ON s.id = m.student_id
      WHERE s.class_name = $1
        AND ($2::varchar IS NULL OR m.exam = $2)
-       AND ($3::varchar IS NULL OR s.section = $3)
+       AND ($3::varchar[] IS NULL OR s.section = ANY($3::varchar[]))
      GROUP BY m.subject
      ORDER BY m.subject`,
-    [filter.className, filter.exam ?? null, filter.section ?? null],
+    [filter.className, filter.exam ?? null, sections],
   );
 
   return result.rows.map((row) => ({

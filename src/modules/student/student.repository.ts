@@ -1,7 +1,7 @@
-import { pool } from '../../config/db';
-import { conflict } from '../../errors/AppError';
-import { postgresErrorCode } from '../../errors/pg';
-import { escapeLike, toDateOnly } from '../../src/utils/validators';
+import { pool } from '../../../config/db';
+import { conflict } from '../../../errors/AppError';
+import { postgresErrorCode } from '../../../errors/pg';
+import { escapeLike, toDateOnly } from '../../utils/validators';
 import type {
   GuardianRelation,
   Student,
@@ -79,6 +79,10 @@ export interface StudentListFilter {
   search?: string;
   limit: number;
   offset: number;
+  /** When set, only these class/section pairs are visible. An empty list matches nothing. */
+  classes?: { className: string; section: string }[];
+  /** Own-record scope. null means the account is not linked, so the list is empty. */
+  studentId?: number | null;
 }
 
 export const findMany = async (filter: StudentListFilter): Promise<Student[]> => {
@@ -99,6 +103,27 @@ export const findMany = async (filter: StudentListFilter): Promise<Student[]> =>
     conditions.push(
       `(roll_no ILIKE ${pattern} ESCAPE E'\\\\' OR first_name ILIKE ${pattern} ESCAPE E'\\\\' OR last_name ILIKE ${pattern} ESCAPE E'\\\\')`,
     );
+  }
+  if (filter.classes !== undefined) {
+    if (filter.classes.length === 0) {
+      conditions.push('FALSE');
+    } else {
+      const pairs = filter.classes.map((entry) => {
+        values.push(entry.className, entry.section);
+        const sectionParam = values.length;
+        const classParam = sectionParam - 1;
+        return `(class_name = $${classParam} AND section = $${sectionParam})`;
+      });
+      conditions.push(`(${pairs.join(' OR ')})`);
+    }
+  }
+  if (filter.studentId !== undefined) {
+    if (filter.studentId === null) {
+      conditions.push('FALSE');
+    } else {
+      values.push(filter.studentId);
+      conditions.push(`id = $${values.length}`);
+    }
   }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';

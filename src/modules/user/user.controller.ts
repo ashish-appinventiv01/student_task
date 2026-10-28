@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from 'express';
-import { paramsOf, validateBody, validateParams } from '../../middlewares/validate';
+import { paramsOf, validateBody, validateParams } from '../../../middlewares/validate';
 import {
   createUserDto,
   updateUserDto,

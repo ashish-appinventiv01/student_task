@@ -35,6 +35,8 @@ export interface SubjectAverageFilter {
   className: string;
   exam?: Exam;
   section?: string;
+  /** Limits the average to these sections. Omit it to include every section. */
+  sections?: string[];
 }
 
 /**

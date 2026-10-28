@@ -1,7 +1,10 @@
 import { Router } from 'express';
-import markController from '../modules/mark/mark.controller';
-import studentController from '../modules/student/student.controller';
-import userController from '../modules/user/user.controller';
+import { noStore } from '../src/middlewares/noStore';
+import adminController from '../src/modules/admin/admin.controller';
+import authController from '../src/modules/auth/auth.controller';
+import markController from '../src/modules/mark/mark.controller';
+import studentController from '../src/modules/student/student.controller';
+import userController from '../src/modules/user/user.controller';
 import { curlResponse } from '../src/utils/response';
 
 const router = Router();
@@ -14,8 +17,12 @@ router.get('/', (_req, res) => {
   res.json({ message: 'Hello World' });
 });
 
+router.use(noStore);
+
 // Register each feature module here.
+curlResponse(router, '/auth', authController);
 curlResponse(router, '/users', userController);
+curlResponse(router, '/admin', adminController);
 curlResponse(router, '/students', studentController);
 curlResponse(router, '/marks', markController);
 

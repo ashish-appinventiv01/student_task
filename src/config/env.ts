@@ -40,6 +40,58 @@ const passPercentageSchema = requiredString('PASS_PERCENTAGE')
   })
   .transform((value) => Number(value));
 
+const fullUrl = (value: string): boolean => {
+  try {
+    const url = new URL(value);
+    return (url.protocol === 'http:' || url.protocol === 'https:') && url.host.length > 0;
+  } catch {
+    return false;
+  }
+};
+
+const marksRateLimitMax = z.preprocess(
+  (value) => (value === undefined || value === null || value === '' ? '60' : value),
+  z
+    .string({ error: 'MARKS_RATE_LIMIT_MAX must be a positive integer' })
+    .trim()
+    .regex(/^[1-9]\d*$/, { error: 'MARKS_RATE_LIMIT_MAX must be a positive integer' })
+    .transform((value) => Number(value)),
+);
+
+const corsOriginsSchema = z.preprocess(
+  (value) => (value === undefined || value === null || value === '' ? 'http://localhost:3000' : value),
+  z
+    .string({ error: 'CORS_ORIGINS must be a full URL' })
+    .superRefine((value, ctx) => {
+      const origins = value
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter((origin) => origin.length > 0);
+      if (origins.some((origin) => origin === '*')) {
+        ctx.addIssue({
+          code: 'custom',
+          message:
+            'CORS_ORIGINS must not be "*": allowing every origin lets any website read this API from a user\'s browser',
+        });
+        return;
+      }
+      for (const origin of origins) {
+        if (!fullUrl(origin)) {
+          ctx.addIssue({
+            code: 'custom',
+            message: `CORS_ORIGINS must be a full URL (received ${JSON.stringify(origin)})`,
+          });
+        }
+      }
+    })
+    .transform((value) =>
+      value
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter((origin) => origin.length > 0),
+    ),
+);
+
 const academicYearSchema = requiredString('ACADEMIC_YEAR')
   .trim()
   .min(1, { error: missing('ACADEMIC_YEAR') })
@@ -66,6 +118,9 @@ const envSchema = z.object({
   DB_NAME: withDefault('postgres'),
   PASS_PERCENTAGE: passPercentageSchema,
   ACADEMIC_YEAR: academicYearSchema,
+  JWT_SECRET: withDefault('dev-access-token-secret'),
+  MARKS_RATE_LIMIT_MAX: marksRateLimitMax,
+  CORS_ORIGINS: corsOriginsSchema,
 });
 
 export type AppConfig = z.infer<typeof envSchema>;

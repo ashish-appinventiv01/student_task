@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { toDomain as toMark, toPersistence as toMarkPersistence } from '../modules/mark/mark.repository';
-import type { MarkRow } from '../modules/mark/mark.interface';
-import { toDomain as toStudent, toPersistence as toStudentPersistence } from '../modules/student/student.repository';
-import type { StudentRow } from '../modules/student/student.interface';
-import type { CreateStudentDto } from '../modules/student/student.dto';
+import { toDomain as toMark, toPersistence as toMarkPersistence } from '../src/modules/mark/mark.repository';
+import type { MarkRow } from '../src/modules/mark/mark.interface';
+import { toDomain as toStudent, toPersistence as toStudentPersistence } from '../src/modules/student/student.repository';
+import type { StudentRow } from '../src/modules/student/student.interface';
+import type { CreateStudentDto } from '../src/modules/student/student.dto';
 
 const studentRow = (overrides: Partial<StudentRow> = {}): StudentRow => ({
   id: 7,

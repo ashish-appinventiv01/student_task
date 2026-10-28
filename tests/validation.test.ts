@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createMarksDto } from '../modules/mark/mark.dto';
-import { toAverageDto } from '../modules/mark/mark.service';
-import { createStudentDto, listStudentsQueryDto } from '../modules/student/student.dto';
+import { createMarksDto } from '../src/modules/mark/mark.dto';
+import { toAverageDto } from '../src/modules/mark/mark.service';
+import { createStudentDto, listStudentsQueryDto } from '../src/modules/student/student.dto';
 import { assertSafePayload } from '../middlewares/rejectDangerousPayload';
 
 const student = {

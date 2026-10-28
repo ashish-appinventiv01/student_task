@@ -45,6 +45,13 @@ describe('validateConfig', () => {
     const config = validateConfig(validConfig);
     expect(config.PASS_PERCENTAGE).toBe(33.5);
     expect(config.ACADEMIC_YEAR).toBe('2026-27');
+    expect(config.MARKS_RATE_LIMIT_MAX).toBe(60);
+  });
+
+  it('rejects a wildcard CORS origin because allow-all is unsafe', () => {
+    expect(() => validateConfig({ ...validConfig, CORS_ORIGINS: '*' })).toThrowError(
+      /^CORS_ORIGINS must not be "\*": allowing every origin lets any website read this API from a user's browser$/,
+    );
   });
 
   it('accepts a century rollover', () => {
